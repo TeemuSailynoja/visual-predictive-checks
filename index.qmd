@@ -40,31 +40,15 @@ the [Journal of Visualization and Interaction](https://www.journalovi.org/). See
 
 ::: {.callout-note appearance="simple" icon=false collapse=false}
 ## Abstract {.unnumbered}
+
 ###### Introduction
-A key step in the Bayesian workflow for model building is the graphical assessment of model predictions,
-whether these are drawn from the prior or posterior predictive distribution.
-The goal of these assessments is
-to identify whether the model is a reasonable (and ideally accurate) representation of the domain
-knowledge and/or observed data. There are many commonly used visual predictive checks which can be 
-misleading if their implicit assumptions do not match the reality. Thus, there is a need for more guidance 
-for selecting, interpreting, and
-diagnosing appropriate visualizations. As a visual predictive check itself can be viewed as a 
-model fit to data, assessing when this model fails to represent the data is important for drawing
-well-informed conclusions.
+A key step in the Bayesian workflow for model building is the graphical assessment of model predictions, whether these are drawn from the prior or posterior predictive distribution. The goal of these assessments is to identify whether the model is a reasonable (and ideally accurate) representation of the domain knowledge and/or observed data. There are many commonly used visual predictive checks which can be  misleading if their implicit assumptions do not match the reality. Thus, there is a need for more guidance  for selecting, interpreting, and diagnosing appropriate visualizations. As a visual predictive check itself can be viewed as a  model fit to data, assessing when this model fails to represent the data is important for drawing well-informed conclusions.
 
 ###### Demonstration
-
-We present recommendations for appropriate visual predictive checks for observations that are: continuous,
-discrete, or a mixture of the two. We also discuss diagnostics to aid in the selection of visual
-methods. Specifically, in the detection of an incorrect assumption of continuously-distributed data:
-identifying when data is likely to be discrete or contain discrete components, detecting and estimating
-possible bounds in data, and a diagnostic of the goodness-of-fit to data for density plots made
-through kernel density estimates.
+We provide guidance for visual predictive checks across continuous, discrete, and mixed data. This includes diagnostics for identifying discrete components, estimating bounds, and assessing goodness-of-fit for density plots. We also offer recommendations for visual checks tailored to binary, ordinal, categorical, and count data.
 
 ###### Conclusion
-We offer recommendations and diagnostic tools to mitigate ad-hoc decision-making in visual
-predictive checks. These contributions aim to improve the robustness and interpretability of
-Bayesian model criticism practices.
+We offer recommendations and diagnostic tools to mitigate ad-hoc decision-making in visual predictive checks. The discussed methods have been implemented in `bayesplot` (@gabry_plotting_2022) and `ArviZ` (@kumar_arviz_2019) software packages to facilitate their use. These contributions aim to improve the robustness and interpretability of Bayesian model criticism practices.
 :::
 
 ## Introduction
@@ -73,8 +57,7 @@ model building workflows. These assessments may reveal that the model prediction
 (or replicate) the observed data, prompting the modeller to either improve their model, or adjust
 their confidence in the predictions accordingly. In this paper, we focus on examples rising from
 Bayesian workflows [@gabry_visualization_2019;@gelman_bayesian_2020], such as posterior predictive
-checking
-[PPC; @box_sampling_1980;@rubin_bayesianly_1984; @gelman_posterior_1996; @gelman_bayesian_2013], and
+checking [PPC; @box_sampling_1980;@rubin_bayesianly_1984; @gelman_posterior_1996; @gelman_bayesian_2013], and
 visualizations of data, posterior, and posterior predictive distributions. 
 Visualization of data distribution is useful even if we do not do any modeling. In Bayesian inference, 
 the posterior distribution presents the uncertainty in the parameter values after conditioning on data, and the 
@@ -168,7 +151,7 @@ c) Quantile dot plot with $100$ quantiles as implemented in \textsc{ggdist} by @
 |                       |                                                                    | - Exceptions for discrete distributions need to be implemented.                                                              |
 +-----------------------+--------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------+
 
-: Summary of advantages and disadvantages of the three distribution visualizations discussed in
+: Summary of advantages and disadvantages of the three density visualizations discussed in
 the article. {#tbl-pros-cons}
 
 
@@ -702,43 +685,15 @@ the relative frequency of any value is more than 2\% of the full sample, we cons
 that the data might contain discrete values.
 
 
-### Visual predictive checking with overlaid plots{#sec-predictive-checks}
+### Visual predictive checking with overlaid plots{#sec-predictive-checks_overlay}
 
-When comparing data and model predictions, one approach is to show visualization of data 
-and visualization of the draws from the predictive distribution overlaid in one plot. 
-The most common approach is to plot overlaid
-KDE plots, as it is usually easy to distinguish several overlaid KDE lines from each other. The
-bandwidth selection plays an important role in the comparison. On one hand, if the chosen bandwidth
-is narrow, the KDEs can show large variation even when repeatedly drawing from the same
-distribution. On the other hand, with a wide bandwidth, the KDE may be too smooth and
-hide important details. With histograms, and quantile dot plots, overlaid plots are  rarely used, as the bin
-boundaries and dot locations depend on the model prediction and the resulting overlaid figure 
-becomes difficult to read. A common solution for histograms, shown later in @sec-count-data,
-is to use a shared set of bins for the predictions and data, and to increase readability by only
-show the predictions through per bin summary statistics, such as mean and quantile based intervals.
-A drawback with this approach is, that the per bin summaries don't show dependency between the bins,
-making it harder to assess the global shape of the density. To compare multiple quantile dot plots
-to a reference plot, we propose overlaying the reference plot with just the top dots of each stack
-in the quantile dot plots of the predictive samples. @fig-qdotplot-overlay shows the resulting plot,
-which illustrates the variation in the overall form of the predictive distribution. Again, when
-summarizing the quantile dot plots of the predictive draws, we lose information on the dependency
-between heights of the stacks and the overall shape of the predictive density.
+When comparing data and model predictions, one approach is to show visualization of data  and visualization of the draws from the predictive distribution overlaid in one plot. The predictive distribution is not expected to give an exact match, for example the posterior predictive distribution of a Bayesian model usually has thicker tails than the true underlying observation distribution. As a result, effective visual comparisons should assess whether the observed data are plausibly consistent with the predictive distribution, rather than whether the two match exactly. For continuous data, a common way to do this is to plot overlaid density estimates.
 
-Overlaid KDE plots are usually easy to interpret---assuming the smoothness assumptions match the underlying data and draws from the predictive distribution---although they lack a quantification for when the differences are significant.
-For better quantification of the difference and more robust behavior in the case of non-smooth underlying distributions, 
-we recommend the use of the graphical PIT-ECDF test described in
-@sec-assessing-the-goodness-of-fit. In posterior predictive checks, we assess the fit between the
-observations and the predictive distribution of the model. The predictive distribution is not
-expected to give an exact match, for example the posterior predictive distribution of a Bayesian
-model usually has thicker tails than the true underlying observation distribution. To avoid using
-the same observations for both fitting the model and assessing the predictive performance, we use
-leave-one-out cross-validation (LOO-CV). Especially flexible models and small observations require
-LOO-CV for more reliable PIT values. If one were to not use cross-validation, the PIT values would
-tend to be too close to $0.5$ and the PIT ECDF plot would be S-shaped, suggesting many observations 
-are too close to their respective predictive means. For fast LOO-CV computation, we recommend using Pareto
-smoothed importance sampling (PSIS)  [@JMLR:v25:19-556], estimates the leave-one-out predictive distributions without the need for refitting the model for each left out observation. 
-In our experience, the PIT ECDF plots of both the posterior predictive and LOO-predictive draws are useful for assessing
-that the predictive distribution of the model is well calibrated and the visualizations give insight to the nature of the possible issues in model fit.
+Typically, the most common choice for overlaid density plots is the KDE, since multiple curves are usually easy to distinguish when shown together. The bandwidth selection plays an important role in the comparison. On one hand, if the chosen bandwidth is narrow, the KDEs can show large variation even when repeatedly drawing from the same distribution. On the other hand, with a wide bandwidth, the KDE may be too smooth and hide important details. 
+
+(Do we want to mention ECDFs???) ECDFs are also easy to distinguish when overlaid and avoid the need for bandwidth selection. They can be particularly useful when the support of individual distributions is small compared to the overall range of the  predictive distribution, a situation that often arises in prior predictive checks. A drawback is that differences in local density may be harder to detect from ECDFs than from density-based plots.
+
+With histograms, and quantile dot plots, overlaid plots are rarely used, as the bin boundaries and dot locations depend on the model prediction and the resulting overlaid figure becomes difficult to read. A common solution for histograms, shown later in @sec-count-data, is to use a shared set of bins for the predictions and data, and to increase readability only show the predictions through per bin summary statistics, such as mean and quantile based intervals. A drawback with this approach is, that the per bin summaries don't show dependency between the bins, making it harder to assess the global shape of the density. To compare multiple quantile dot plots to a reference plot, we propose overlaying the reference plot with just the top dots of each stack in the quantile dot plots of the predictive samples. @fig-qdotplot-overlay shows the resulting plot,which illustrates the variation in the overall form of the predictive distribution. Again, when summarizing the quantile dot plots of the predictive draws, we lose information on the dependency between heights of the stacks and the overall shape of the predictive density.
 
 ::: {#fig-overlaid-predictive-checks layout-ncol="3"}
 
@@ -756,159 +711,16 @@ dark blue quantile dot plot overlaid with multiple light blue dots. The light bl
 shape of the tops of the dark blue dot plot, but show vertical and horizontal variation in the dot
 locations."}
 
-Overlaid predictive checks. KDE plots can easily be overlaid and the resulting visualization is
-straightforward to read. The histogram for the data is overlaid with means and central 90% quantiles
-of the histogram bins of the posterior draws, when using the binning from the histogram of the observation. For the quantile dot plot, the top dot of each stack of dots in each posterior draw is overlaid to the full quantile dot plot of the observation, visualizing the variation in the shape of the predictive distributions.
+Overlaid predictive checks. KDE plots can easily be overlaid and the resulting visualization is straightforward to read. The histogram for the data is overlaid with means and central 90% quantiles of the histogram bins of the posterior draws, when using the binning from the histogram of the observation. For the quantile dot plot, the top dot of each stack of dots in each posterior draw is overlaid to the full quantile dot plot of the observation, visualizing the variation in the shape of the predictive distributions.
 
 :::
 
+### Other predictive checking strategies for continuous data{#sec-predictive-checks_others}
 
-## Visual predictive checks for count data{#sec-count-data}
-In this section, we focus on count data, which although being
-discrete, can benefit from both continuous and discrete
-visualizations. Continuous visualizations are commonly
-used for count data and they can sometimes
-be a good choice, but there are cases where they can 
-be misleading and visual predictive checks designed specifically 
-for count data should be used.
+Overlaid plots, particularly those based on KDEs, are generally easy to interpret, but they do not provide a quantitative measure of the differences between distributions. For a more formal assessment, we recommend using PIT–ECDF plots, as discussed in [@sailynoja_graphical_2022]. PIT-ECDF can be used togheter with leave-one-out cross-validation (LOO-CV) to avoid using the same observations for both fitting the model and assessing the predictive performance. This is particuallary important for flexible models and small number of observations. If one were to not use cross-validation, the PIT values would tend to be too close to $0.5$ and the PIT ECDF plot would be S-shaped, suggesting many observations are too close to their respective predictive means. For fast LOO-CV computation, we recommend using Pareto smoothed importance sampling (PSIS) [@JMLR:v25:19-556]. This method estimates the leave-one-out predictive distributions without the need for refitting the model for each left out observation.  In our experience, the PIT ECDF plots of both the posterior predictive and LOO-predictive draws are useful for assessing that the predictive distribution of the model is well calibrated and the visualizations give insight to the nature of the possible issues in model fit.
 
-In predictive checking for count data, we focus on two visualizations; the overlaid KDE plots
-introduced in @sec-predictive-checks, and our version of the rootogram [@kleiber_visualizing_2016].
-In our experience, the higher the number of distinct counts being visualized, and the smaller the
-variance of probabilities of individual counts is, the more effective KDEs are for visualizing count
-data, although one should pay close attention to the effect of the boundedness on the KDE fit as 
-count data is usually limited to non-negative values and sometimes also has maximum count limit.
-Rootograms offer a visualization which emphasizes the discrete nature of the predictive
-and observation distributions. In our experience, rootograms are good for predictive checking of count data, 
-when the number of distinct counts is low or there is a 
-sharp changes in the probabilities of consecutive counts, for example, when the 
-data exhibits zero-inflation (the probability of $0$ is much higher than the probability of $1$).
+So far, the methods discussed provide global assessments, like detection over or underdispersion. Practitioners are often also interested in model behavior conditional on individual predictors. Residual-based diagnostics play an important role in this context, as residual plots are commonly used to assess systematic deviations between observations and model predictions across covariate values, identify heteroscedasticity, and revealing local model misspecification that may not be apparent in marginal or aggregate checks [@gelman_regression_2020; @gelman_bayesian_2013; @agresti_categorical_2013]. Residual-based diagnostics are widely used and well understood for continuous data, so we do not discuss them further here. We will revisit them in the context of discrete data, which present additional challenges for visual predictive checks.
 
-In @sec-counts-with-ecdf we show how, similarly to the cases in
-@sec-continuous-predictive-distributions, goodness-of-fit tests can be used to assess how well the
-KDE plot represents the data. In @sec-counts-with-rootogram we introduce our version of the
-rootogram, and demonstrate its use when the familiar KDE exhibits goodness-of-fit issues. The visual
-predictive checks in both @sec-counts-with-ecdf and @sec-counts-with-rootogram follow an example
-from a modeling workflow of estimating the effect of integrated pest management on reducing
-cockroach levels in urban apartments [@gelman_regression_2020]. We focus on assessing the quality of
-the predictions of a generalized linear model with a negative binomial data model for the number of
-roaches caught in traps during the original experiment.
-
-
-### Visualizing count data with KDE plots{#sec-counts-with-ecdf}
-
-A common approach for count data, especially when the number of unique discrete values is high, is
-to assume that the values can be visualized as if they were from a continuous distribution. This
-enables the use of overlaid KDE plots for visual predictive checks.
-@fig-high-cardinality-count-data-kde-ecdf and @fig-small-bandwidth-count-data-kde illustrate
-how---after changing the default bandwidth algorithm---a KDE plot can have a satisfactory
-goodness-of-fit to discrete data, and how the PIT ECDF diagnostic can be used to assess the
-goodness-of-fit of the continuous visual representation of the discrete data.
-
-The data in the roach dataset exhibits zero-inflation, and the default algorithm of the selected
-visualization software fits an unbounded KDE with a relatively large bandwidth, resulting in a bad
-fit shown in @fig-high-cardinality-count-data-kde-ecdf. After using a left bounded KDE and the SJ
-bandwidth selection method, we see in @fig-small-bandwidth-count-data-kde that away from
-zero, the observation distribution is well summarized by the KDE plot.
-
-::: {#fig-high-cardinality-count-data-kde-ecdf layout-ncol="2"}
-
-![](images/03_01_unbounded_kde-1.png){.plot fig-alt="A line graph showing a KDE of the observation in dark blue. This is overlaid with KDEs of the predictive samples. The x-axis is displayed in log-scale."}
-
-![](images/03_01_unbounded_kde_pit_ecdf-1.png){.plot fig-alt="A PIT-ECDF plot. The ECDF of the PIT values stays above the simultanous confidense intervals for the whole visualization, and shows clear discrete steps. After the first few steps, the step size reduces and the line looks smoother."}
-
-An overlaid KDE plot of the observed roach counts and the predictive samples. The KDE density uses the
-default predictive check implementation of `bayesplot`, and is not bounded and has
-a relatively large kernel bandwidth. The PIT ECDF shows that the visualization assigns too much
-probability mass to small counts, and between the discrete integer valued observations, resulting in
-the PIT ECDF staying above the simultaneous confidence bands.
-
-:::
-
-::: {#fig-small-bandwidth-count-data-kde layout-ncol="2"}
-
-![](images/03_01_bounded_kde_bounded-1.png){.plot fig-alt="A line graph showing a KDE of the observation in dark blue. This is overlaid with KDEs of the predictive samples. The x-axis is displayed in log-scale. The KDEs show a distinct spike at x=0, and x=1 with very low density between these values."}
-
-![](images/03_01_bounded_kde_bounded_pit_ecdf-1.png){.plot fig-alt="A PIT-ECDF plot. The ECDF of the PIT values starts above the simultanous confidense intervals, and shows clear discrete steps. After the first step, the ECDF stays within the confidence intervals, and the step size reduces and the line looks smoother."}
-
-An overlaid KDE plot of the observed roach counts and the predictive samples. The KDE is bounded at
-zero and uses the SJ method for bandwidth selection, resulting in a better fit to the discrete data.
-Due to zero inflation, there are numerous ties in the PIT values and the PIT ECDF is outside the
-simultaneous confidence bands at zero. We see that for larger observed counts, the visualization
-represents the data well.
-
-:::
-
-A reasonable step in the visual predictive checking for the roaches model, is to separate the analysis of the long tail and the bulk of the distribution. One possible approach for analyzing the tail of the distribution, is to compare how the estimated Pareto shape parameter of the predictive draws compares to the tail shape of the data. When comparing the tail shapes, one shouldn't expect an exact fit, as the predictive distributions typically exhibit thicker tails due to uncertainty.
-When moving to analyze the bulk of the distribution, we see that the number of distinct counts below 90\% quantile is relatively small, $48$, and thus we may expect a discrete visual predictive check to perform well.
-
-### Rootograms emphasize discreteness of count data{#sec-counts-with-rootogram}
-
-::: {#fig-rootogram-examples layout-ncol="3"}
-
-![Standing Rootogram](images/03_01_rootogram_plain_cut-1.png){.plot #fig-standing-rootogram fig-alt="A bar graph of observations overlaid with a line graph of predictive means, and a ribbon of predictive intervals surrounding the means."}
-
-![Hanging Rootogram](images/03_01_rootogram_hanging_cut-1.png){.plot #fig-hanging-rootogram fig-alt="A line graph of predictive means, and a ribbon of predictive intervals surrounding the means. Observations are displayed as bars with the top of the bar at the predictive mean, and the bottom displaying the difference of the observation and the predictive mean."}
-
-![Suspended Rootogram](images/03_01_rootogram_suspended_cut-1.png){.plot #fig-suspended-rootogram fig-alt="A bar graph of the differences between the observations and the predictive means overlaid with a line graph of predictive means, and a ribbon of predictive intervals surrounding the means."}
-
-The three types of rootograms introduced by @kleiber_visualizing_2016, here with an additional darker ribbon representing the predictive uncertainty.
-a) The standing rootogram displays a bar graph of the observed counts overlaid with the predictive expectations and their 90% credible intervals.
-b) In the hanging rootogram, the bar plot of the observed counts is hanging from the predictive expectation, visualizing the average predictive error as the empty space between the x-axis and the bars.
-c) In the suspended rootogram, only the difference between the prediction and the observation is displayed as bars.
-
-:::
-
-@kleiber_visualizing_2016 proposed rootograms to be particularly useful in diagnosing issues, such
-as over-dispersion and excess zeros, in count data models.
-
-Traditionally, in a rootogram the frequencies of the observed counts are visualized with a 
-bar plot, and predictive expected frequencies as a connected line plot. Importantly, the frequencies on the
-vertical axis are plotted on a square root scale to emphasize counts with low frequencies, occurring
-often in the tails of the distribution
-[see for example, @tukey_graphic_1972; @kleiber_visualizing_2016]. As shown in
-@fig-standing-rootogram, one can include the visual representations of the predictive uncertainty
-without overly complicating the visualization. Aside from the *standing* rootogram in figure
-@fig-standing-rootogram, two common variations are the hanging and suspended rootogram, shown in
-@fig-hanging-rootogram and @fig-suspended-rootogram respectively. These alternatives offer a more
-pattern focused approach to inspecting the possible differences between the observed and predicted
-values.
-
-In the hanging rootogram, the observed frequencies are drawn hanging form the predictive mean,
-placing the lower end of the bar at the difference of the predicted mean and the observation,
-$y_{pred} - y_{obs}$. This end is then directly readable as over- or underestimation, depending if
-the bar is above or below the horizontal axis.
-
-The suspended rootogram instead visualizes the residual, $y_{obs} - y_{pred}$, as bars with their
-other end at the horizontal axis of the visualization.
-
-::: {#fig-new-rootogram-comparison layout-ncol="2"}
-
-![Standing Rootogram](images/03_01_rootogram_plain_cut-2.png){.plot #fig-standing-rootogram-comparison fig-alt="A standing rootogram. Bar plot of the observation overlaid with a line graph of the expected predictive count frequencies and a ribbon showing the 90% credible interval. The y-axis of the plot displays squareroots of the frequencies, ranging from 0 to 10."}
-
-![Discrete Rootogram](images/03_01_rootogram_discrete_cut-1.png){.plot #fig-discrete-rootogram fig-alt="A discretized rootogram. Scatter plot of observation counts overlaid with lighter points for expected predictive count frequencies and lines showing 90% credible intervals. Observations falling outside the credible intervals are shown in red. The y-axis of the plot is squareroot scaled with the axis tick values ranging from 0 to 100."}
-
-A side-by-side comparison of the commonly used standing rootogram with credible intervals, and our suggested version which emphasizes discreteness of count data.
-a) Displays the square roots of the count frequencies, and visualizes the model predictions through a continuous line and ribbon.
-b) Displays the unmodified counts on the vertical axis, while using square root scaling for the axis,
-thus enabling direct reading of the count frequencies. The predictions are displayed as light blue points and interval lines. The observations are overlaid with darker points, except the observations outside the predictive credible intervals are highlighted in red.
-Again, some points are expected to fall outside the credible intervals.
-:::
-
-@fig-discrete-rootogram shows our proposed modification to the traditional rootogram. This version
-has two main differences to the previously used visualizations; first, it emphasizes the
-discreteness of the predictions by showing the predictive frequencies as points and point-wise
-credible intervals, instead of connecting these into lines and filled areas.
-For overlaying, we prefer to show the observations as points and use color to highlight the observations falling
-outside the credible intervals. Although some values are expected to fall outside the credible
-intervals, these are often of interest to the practitioner for identifying possible issues.
-The second important
-distinction is how we implement the square root scaling on the vertical axis---instead of the
-traditional method of having an axis with equally spaced tick marks displaying the square roots of
-the frequencies---we transform the axis to square root scale and display the untransformed frequencies
-(see comparison in @fig-new-rootogram-comparison). We recommend the use of axis ticks or horizontal
-lines as visual cues of the non-linear scaling. This second change allows for a more natural reading of the
-frequencies shown on the vertical axis of the plot.
 
 ## Visual predictive checks for binary data{#sec-visual-predictive-checks-for-binary-data}
 
@@ -927,17 +739,13 @@ used bar and binned calibration plots, (c) the PAV-adjusted calibration plot, wi
 bands computed from predictive samples.
 
 :::
+In this section, we focus on predictive checking when working with binary observations. Assessing the calibration of binary predictions is a common task made difficult by the discreteness of the observed outcome. Below, we walk through two usual approaches, and introduce an alternative offered by PAV-adjusted calibration plots [@dimitriadis_stable_2021].
 
-Assessing the calibration of binary predictions is a common task made difficult by the discreteness
-of the observed outcome. Below, we walk through two usual approaches, and introduce an alternative
-offered by PAV-adjusted calibration plots [@dimitriadis_stable_2021].
+We use the roaches example, which focuses on estimating the effect of integrated pest management on cockroach levels in urban apartments [@gelman_regression_2020]. We consider three models for predicting if one or more roaches will be observed:
 
-We continue using the roaches example introduced in @sec-count-data, and consider three models for
-predicting if one or more roaches will be observed:
-
-  1. an intercept-only model estimating the overall probability of observing one or more roaches,
-  2. the negative binomial regression model from @sec-count-data.
-  3. a zero-inflated version of Model 2 using the covariates to additionally model the probability of not observing any roaches.
+  1. An intercept-only model estimating the overall probability of observing one or more roaches,
+  2. A negative binomial regression model.
+  3. A zero-inflated version of Model 2 using the covariates to additionally model the probability of not observing any roaches.
 
 ### Bar graphs
 
@@ -1035,17 +843,9 @@ and additionally have higher ability to discriminate the observations with no ro
 
 ### Residual plots
 
-While binned and PAV-adjusted calibration plots are useful for assessing the overall predictive
-calibration of a model, the behavior conditional on individual predictors is often of interest to
-practitioners.
+While binned and PAV-adjusted calibration plots are useful for assessing the overall predictive calibration of a model, practitioners are often also interested in model behavior conditional on individual predictors. As discussed for continuous data, residual plots are commonly used to assess deviations between observations and predictions. While residuals are straightforward to compute and visualize for continuous outcomes, they are more challenging for binary data. 
 
-Residual plots are commonly deployed for assessing the deviation between observations and
-predictions [@gelman_regression_2020; @gelman_bayesian_2013; @agresti_categorical_2013]. As with
-binned calibration plots, binning is used for transforming discrete outcomes into relative event
-frequencies.
-
-Again, the ad-hoc choice of binning may result in vastly different plots, and thus we propose the
-use of PAV-adjusted CEPs, computed with regards to the predicted probabilities, in place of the
+As with binned calibration plots, binning is therefore used to transform discrete outcomes into relative event frequencies, enabling residual-like diagnostics in this setting. Again, the ad-hoc choice of binning may result in vastly different plots, and thus we propose the use of PAV-adjusted CEPs, computed with regards to the predicted probabilities, in place of the
 discrete observations. @fig-residuals shows an example of a PAV-adjusted residual plot for the
 roaches example. 
 
@@ -1167,6 +967,152 @@ Again, the bar graph doesn't indicate meaningful difference between the predicti
 The side-by-side comparison of the PAV-adjusted calibration plots for the cumulative conditional event probabilities reveal that Model 1, containing an implementation error, is under confident in its predictions.
 :::
 
+
+
+## Visual predictive checks for count data{#sec-count-data}
+In this section, we focus on count data, which although being
+discrete, can benefit from both continuous and discrete
+visualizations. Continuous visualizations are commonly
+used for count data and they can sometimes
+be a good choice, but there are cases where they can 
+be misleading and visual predictive checks designed specifically 
+for count data should be used.
+
+In predictive checking for count data, we focus on two visualizations; the overlaid KDE plots
+introduced in @sec-predictive-checks_overlay, and our version of the rootogram [@kleiber_visualizing_2016].
+In our experience, the higher the number of distinct counts being visualized, and the smaller the
+variance of probabilities of individual counts is, the more effective KDEs are for visualizing count
+data, although one should pay close attention to the effect of the boundedness on the KDE fit as 
+count data is usually limited to non-negative values and sometimes also has maximum count limit.
+Rootograms offer a visualization which emphasizes the discrete nature of the predictive
+and observation distributions. In our experience, rootograms are good for predictive checking of count data, 
+when the number of distinct counts is low or there is a 
+sharp changes in the probabilities of consecutive counts, for example, when the 
+data exhibits zero-inflation (the probability of $0$ is much higher than the probability of $1$).
+
+In @sec-counts-with-ecdf we show how, similarly to the cases in @sec-continuous-predictive-distributions, goodness-of-fit tests can be used to assess how well the KDE plot represents the data. In @sec-counts-with-rootogram we introduce our version of the rootogram, and demonstrate its use when the familiar KDE exhibits goodness-of-fit issues. The visual predictive checks in both @sec-counts-with-ecdf and @sec-counts-with-rootogram follow the roaches example introduced in @sec-visual-predictive-checks-for-binary-data. We focus on assessing the quality of the predictions of a generalized linear model with a negative binomial data model for the number of roaches caught in traps during the original experiment.
+
+
+### Visualizing count data with KDE plots{#sec-counts-with-ecdf}
+
+A common approach for count data, especially when the number of unique discrete values is high, is
+to assume that the values can be visualized as if they were from a continuous distribution. This
+enables the use of overlaid KDE plots for visual predictive checks.
+@fig-high-cardinality-count-data-kde-ecdf and @fig-small-bandwidth-count-data-kde illustrate
+how---after changing the default bandwidth algorithm---a KDE plot can have a satisfactory
+goodness-of-fit to discrete data, and how the PIT ECDF diagnostic can be used to assess the
+goodness-of-fit of the continuous visual representation of the discrete data.
+
+The data in the roach dataset exhibits zero-inflation, and the default algorithm of the selected
+visualization software fits an unbounded KDE with a relatively large bandwidth, resulting in a bad
+fit shown in @fig-high-cardinality-count-data-kde-ecdf. After using a left bounded KDE and the SJ
+bandwidth selection method, we see in @fig-small-bandwidth-count-data-kde that away from
+zero, the observation distribution is well summarized by the KDE plot.
+
+::: {#fig-high-cardinality-count-data-kde-ecdf layout-ncol="2"}
+
+![](images/03_01_unbounded_kde-1.png){.plot fig-alt="A line graph showing a KDE of the observation in dark blue. This is overlaid with KDEs of the predictive samples. The x-axis is displayed in log-scale."}
+
+![](images/03_01_unbounded_kde_pit_ecdf-1.png){.plot fig-alt="A PIT-ECDF plot. The ECDF of the PIT values stays above the simultanous confidense intervals for the whole visualization, and shows clear discrete steps. After the first few steps, the step size reduces and the line looks smoother."}
+
+An overlaid KDE plot of the observed roach counts and the predictive samples. The KDE density uses the
+default predictive check implementation of `bayesplot`, and is not bounded and has
+a relatively large kernel bandwidth. The PIT ECDF shows that the visualization assigns too much
+probability mass to small counts, and between the discrete integer valued observations, resulting in
+the PIT ECDF staying above the simultaneous confidence bands.
+
+:::
+
+::: {#fig-small-bandwidth-count-data-kde layout-ncol="2"}
+
+![](images/03_01_bounded_kde_bounded-1.png){.plot fig-alt="A line graph showing a KDE of the observation in dark blue. This is overlaid with KDEs of the predictive samples. The x-axis is displayed in log-scale. The KDEs show a distinct spike at x=0, and x=1 with very low density between these values."}
+
+![](images/03_01_bounded_kde_bounded_pit_ecdf-1.png){.plot fig-alt="A PIT-ECDF plot. The ECDF of the PIT values starts above the simultanous confidense intervals, and shows clear discrete steps. After the first step, the ECDF stays within the confidence intervals, and the step size reduces and the line looks smoother."}
+
+An overlaid KDE plot of the observed roach counts and the predictive samples. The KDE is bounded at
+zero and uses the SJ method for bandwidth selection, resulting in a better fit to the discrete data.
+Due to zero inflation, there are numerous ties in the PIT values and the PIT ECDF is outside the
+simultaneous confidence bands at zero. We see that for larger observed counts, the visualization
+represents the data well.
+
+:::
+
+A reasonable step in the visual predictive checking for the roaches model, is to separate the analysis of the long tail and the bulk of the distribution. One possible approach for analyzing the tail of the distribution, is to compare how the estimated Pareto shape parameter of the predictive draws compares to the tail shape of the data. When comparing the tail shapes, one shouldn't expect an exact fit, as the predictive distributions typically exhibit thicker tails due to uncertainty.
+When moving to analyze the bulk of the distribution, we see that the number of distinct counts below 90\% quantile is relatively small, $48$, and thus we may expect a discrete visual predictive check to perform well.
+
+### Rootograms emphasize discreteness of count data{#sec-counts-with-rootogram}
+
+::: {#fig-rootogram-examples layout-ncol="3"}
+
+![Standing Rootogram](images/03_01_rootogram_plain_cut-1.png){.plot #fig-standing-rootogram fig-alt="A bar graph of observations overlaid with a line graph of predictive means, and a ribbon of predictive intervals surrounding the means."}
+
+![Hanging Rootogram](images/03_01_rootogram_hanging_cut-1.png){.plot #fig-hanging-rootogram fig-alt="A line graph of predictive means, and a ribbon of predictive intervals surrounding the means. Observations are displayed as bars with the top of the bar at the predictive mean, and the bottom displaying the difference of the observation and the predictive mean."}
+
+![Suspended Rootogram](images/03_01_rootogram_suspended_cut-1.png){.plot #fig-suspended-rootogram fig-alt="A bar graph of the differences between the observations and the predictive means overlaid with a line graph of predictive means, and a ribbon of predictive intervals surrounding the means."}
+
+The three types of rootograms introduced by @kleiber_visualizing_2016, here with an additional darker ribbon representing the predictive uncertainty.
+a) The standing rootogram displays a bar graph of the observed counts overlaid with the predictive expectations and their 90% credible intervals.
+b) In the hanging rootogram, the bar plot of the observed counts is hanging from the predictive expectation, visualizing the average predictive error as the empty space between the x-axis and the bars.
+c) In the suspended rootogram, only the difference between the prediction and the observation is displayed as bars.
+
+:::
+
+@kleiber_visualizing_2016 proposed rootograms to be particularly useful in diagnosing issues, such
+as over-dispersion and excess zeros, in count data models.
+
+Traditionally, in a rootogram the frequencies of the observed counts are visualized with a 
+bar plot, and predictive expected frequencies as a connected line plot. Importantly, the frequencies on the
+vertical axis are plotted on a square root scale to emphasize counts with low frequencies, occurring
+often in the tails of the distribution
+[see for example, @tukey_graphic_1972; @kleiber_visualizing_2016]. As shown in
+@fig-standing-rootogram, one can include the visual representations of the predictive uncertainty
+without overly complicating the visualization. Aside from the *standing* rootogram in figure
+@fig-standing-rootogram, two common variations are the hanging and suspended rootogram, shown in
+@fig-hanging-rootogram and @fig-suspended-rootogram respectively. These alternatives offer a more
+pattern focused approach to inspecting the possible differences between the observed and predicted
+values.
+
+In the hanging rootogram, the observed frequencies are drawn hanging form the predictive mean,
+placing the lower end of the bar at the difference of the predicted mean and the observation,
+$y_{pred} - y_{obs}$. This end is then directly readable as over- or underestimation, depending if
+the bar is above or below the horizontal axis.
+
+The suspended rootogram instead visualizes the residual, $y_{obs} - y_{pred}$, as bars with their
+other end at the horizontal axis of the visualization.
+
+::: {#fig-new-rootogram-comparison layout-ncol="2"}
+
+![Standing Rootogram](images/03_01_rootogram_plain_cut-2.png){.plot #fig-standing-rootogram-comparison fig-alt="A standing rootogram. Bar plot of the observation overlaid with a line graph of the expected predictive count frequencies and a ribbon showing the 90% credible interval. The y-axis of the plot displays squareroots of the frequencies, ranging from 0 to 10."}
+
+![Discrete Rootogram](images/03_01_rootogram_discrete_cut-1.png){.plot #fig-discrete-rootogram fig-alt="A discretized rootogram. Scatter plot of observation counts overlaid with lighter points for expected predictive count frequencies and lines showing 90% credible intervals. Observations falling outside the credible intervals are shown in red. The y-axis of the plot is squareroot scaled with the axis tick values ranging from 0 to 100."}
+
+A side-by-side comparison of the commonly used standing rootogram with credible intervals, and our suggested version which emphasizes discreteness of count data.
+a) Displays the square roots of the count frequencies, and visualizes the model predictions through a continuous line and ribbon.
+b) Displays the unmodified counts on the vertical axis, while using square root scaling for the axis,
+thus enabling direct reading of the count frequencies. The predictions are displayed as light blue points and interval lines. The observations are overlaid with darker points, except the observations outside the predictive credible intervals are highlighted in red.
+Again, some points are expected to fall outside the credible intervals.
+:::
+
+@fig-discrete-rootogram shows our proposed modification to the traditional rootogram. This version
+has two main differences to the previously used visualizations; first, it emphasizes the
+discreteness of the predictions by showing the predictive frequencies as points and point-wise
+credible intervals, instead of connecting these into lines and filled areas.
+For overlaying, we prefer to show the observations as points and use color to highlight the observations falling
+outside the credible intervals. Although some values are expected to fall outside the credible
+intervals, these are often of interest to the practitioner for identifying possible issues.
+The second important
+distinction is how we implement the square root scaling on the vertical axis---instead of the
+traditional method of having an axis with equally spaced tick marks displaying the square roots of
+the frequencies---we transform the axis to square root scale and display the untransformed frequencies
+(see comparison in @fig-new-rootogram-comparison). We recommend the use of axis ticks or horizontal
+lines as visual cues of the non-linear scaling. This second change allows for a more natural reading of the
+frequencies shown on the vertical axis of the plot.
+
+
+### Other predictive checking strategies for count data{#sec-predictive-checks-counts_others}
+
+PIT-ECDFs and LOO-PIT-ECDFs, previously discussed for continuous data, can also be applied to count data. Because count data are discrete, PIT values require careful handling; one solution is to use randomized PIT values, as described by [@czado_2009]. PAVA-adjusted calibration plots, which we discussed in the context of binary, ordinal, and categorical data—where they are particularly useful due to the lack of alternative strategies—can also be applied to count data. Residuals are commonly used as well, and the previously mentioned hanging and suspended rootograms can serve as residual plots for count outcomes.
+
 ## Discussion
 
 In this paper we discussed the current options for graphical predictive checking in Bayesian model checking
@@ -1211,7 +1157,7 @@ the examples and case studies shown in this article, can be found at
  - **Teemu Säilynoja**: Conceptualization, Methodology, Software, Investigation, Writing - Review &
 Editing, Visualization
  - **Andrew R. Johnson**: Conceptualization, Writing - Review & Editing
- - **Osvaldo A. Martin**: Writing - Review & Editing, Visualization
+ - **Osvaldo A. Martin**: Writing - Review & Editing, Software, Visualization
  - **Aki Vehtari**: Conceptualization, Methodology, Writing - Review & Editing, Supervision, Funding acquisition.
 
 ## License {.unnumbered}
