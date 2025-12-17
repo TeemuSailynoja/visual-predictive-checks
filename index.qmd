@@ -64,42 +64,34 @@ the posterior distribution presents the uncertainty in the parameter values afte
 posterior predictive distribution presents the uncertainty in the predictions for new observations.
 The posterior inference is often performed using Monte Carlo methods [@strumbelj_past_2024], and posterior, posterior 
 predictive distributions are then represented with draws from these distributions. In the same way as we visualize data distributions, we can visualize posterior and predictive distributions.
-In posterior predictive checking, we compare the data distribution to the posterior predictive distribution. The predictive distribution is not expected to coincide exactly with the observed data. For example, the posterior predictive distribution of a Bayesian model typically exhibits heavier tails than the true underlying data-generating distribution. Consequently, effective visual comparisons should focus on whether the the predictive distribution is consistent with observed data rather than on exact agreement. If these distributions are not similar, the model is misspecified and we should consider improving the model.
+In posterior predictive checking, we compare the data distribution to the posterior predictive distribution. The predictive distribution is not expected to coincide exactly with the observed data. For example, the posterior predictive distribution of a Bayesian model typically exhibits heavier tails than the true underlying data-generating distribution. Consequently, effective visual comparisons should focus on whether the predictive distribution is consistent with observed data rather than on exact agreement. If these distributions are not similar, the model is misspecified and we should consider improving the model.
 These visualizations are also applicable to prior predictive checking, where one might compare prior predictive samples to some reference values rising from domain knowledge [@wesnerChoosingPriorsBayesian2021], and to cross-validation predictive checking where data are compared to cross-validation predictive distributions to avoid double use of data.
 
 The purpose of this paper is to illustrate common issues in visual predictive checking, to provide better recommendations for different use cases, and to provide diagnostics to automatically warn if useless or misleading visualization is used.
-Together we have decades of experience in teaching visual predictive checking and helping modellers using popular visual predictive checking tools such as `bayesplot` (@gabry_plotting_2022) and `ArviZ` (@kumar_arviz_2019).
-We have seen many times where students and modellers use commonly recommended visualizations without realizing that in their context, the specific visualization is the wrong one and either useless or even misleading.
+Together we have decades of experience in teaching visual predictive checking and helping modellers use popular visual predictive checking tools such as those implemented in `bayesplot` (@gabry_plotting_2022) and `ArviZ` (@kumar_arviz_2019).
+We have seen many times students and modelers use commonly recommended visualizations without realizing that, in their context, the specific visualization is incorrect, useless, or even misleading.
 Backed up with arguments from recent studies in uncertainty visualization, we provide a summary of methods we recommend.
-These methods are aimed to offer an informed basis for decision-making,
-be it for the modeller to improve on the model or for the end user to set expectations on the performance of the model.
+These methods are aimed to offer an informed basis for decision-making, be it for the modeller to improve on the model or for the end user to set expectations on the performance of the model.
 
-The visualizations we discuss should be considered as
-broadly-applicable tools aimed to give insight into the overall goodness of model fit to the
-observations, as well as to possible deviations in certain parts of the predictive density. 
-Most modeling workflows benefit from additional visualizations tailored to their specific use cases,
-as there is no general visual or numeric check that would reveal every aspect of the predictive
-capabilities of any given model.
-Some commonly-used methods for visualizing model predictions have risen from comparisons of continuous
-variables, and as such have varying degrees of usability for assessing predictions with discrete
-values. Some may not work with all continuous cases, in case of sharp upper or lower bounds in the
-set of possible values the prediction can take.
+The visualizations we discuss should be considered as broadly-applicable tools aimed to give insight into the overall goodness of model fit to the observations, as well as to possible deviations in certain parts of the predictive density. 
+Most modeling workflows benefit from additional visualizations tailored to their specific use cases, as there is no general visual or numeric check that would reveal every aspect of the predictive capabilities of any given model.
+Some commonly-used methods for visualizing model predictions have risen from comparisons of continuous variables, and as such have varying degrees of usability for assessing predictions with discrete values. Some may not work with all continuous cases, in case of sharp upper or lower bounds in the set of possible values the prediction can take.
 
 In @sec-continuous-predictive-distributions, we inspect the common use of kernel density estimates (KDE), histograms and quantile dot plots in summarizing the predictive distribution and the observed data.  In @sec-visual-predictive-checks-for-binary-data, we focus on predictive checks for binary data.
 We showcase tools that expand the visualizations beyond the typical bar graphs and binned
 calibration plots and instead allow for a more robust assessment of the calibration of the
-predictive probabilities.In @sec-visual-predictive-checks-for-categorical-data and
+predictive probabilities. In @sec-visual-predictive-checks-for-categorical-data and
 @sec-visual-predictive-checks-for-ordinal-data, we show how the visual predictive checks described
 for binary predictions can be extended to discrete predictions with a small or medium number of
-individual cases. In @sec-count-data, we discuss the use of visualizations assuming continuous data when the data and predictions are in reality discrete, but have a high number of unique values. We also discuss an alternate way of visualizing count data, when the number of cases is large, but still small enough for the modeller to be interested in attempting to assess the predictions as individual counts. Finally, in @sec-assessing-the-goodness-of-fit we propose an automated goodness-of-fit test to alert the modeller of the presence of conflict between the data and the visualization done with kernel density estimates (KDE), histograms or quantile dot plots.
+individual cases. In @sec-count-data, we discuss the use of visualizations assuming continuous data when the data and predictions are in reality discrete, but have a high number of unique values. We also discuss an alternate way of visualizing count data, when the number of cases is large, but still small enough for the modeller to be interested in attempting to assess the predictions as individual counts. Finally, in @sec-assessing-the-goodness-of-fit we propose an automated goodness-of-fit test to alert the modeller of the presence of conflict between the data and the visualization done with KDEs, histograms or quantile dot plots.
 
-The discussed methods and recommendations in this work have been implemented in `bayesplot` (@gabry_plotting_2022) and `ArviZ` (@kumar_arviz_2019) software packages to facilitate their use.
+The discussed methods and recommendations in this work have been implemented in the software packages `bayesplot` (@gabry_plotting_2022) and `ArviZ` (@kumar_arviz_2019) to facilitate their use.
 
 
 ## Visual predictive checks for continuous data{#sec-continuous-predictive-distributions}
 
-In this section, we consider visualizations for observations from a *continuous* or *almost everywhere continuous* distribution. We focus on three data visualizations; histograms, and KDE-based continuous density plots, as they are the two most commonly used visualizations for summarizing unidimensional distributions, and quantile dot plots [@kay_when_2016] as we see that they offer a useful alternative that we recommend in many cases. @tbl-pros-cons summarizes the main advantages and disadvantages of these three visualizations, and @fig-intro-triplet shows a side-by-side comparison of these visualizations.
-Histograms and density plots are implemented in various commonly used software packages for data visualization and are the two most common choices for initial visual PPCs (@wickham_ggplot2_2016;@gabry_plotting_2022; @kumar_arviz_2019; @kay_ggdist_2023; @eabm_2025).
+In this section, we consider visualizations for observations from a *continuous* or *almost everywhere continuous* distribution. We focus on three data visualizations; histograms, KDEs and quantile dot plots [@kay_when_2016]. The first two are the most commonly used visualizations for summarizing unidimensional distributions and their are common choices for initial visual predictice checks (VPCs) (@wickham_ggplot2_2016;@gabry_plotting_2022; @kumar_arviz_2019; @kay_ggdist_2023; @eabm_2025). We see quantile dots plots as a useful alternative in many cases. @tbl-pros-cons summarizes the main advantages and disadvantages of these three visualizations, and @fig-intro-triplet shows a side-by-side comparison of these visualizations.
+Histograms and KDEs are implemented in various commonly used software packages for data visualization  .
 
 :::{#fig-intro-triplet layout-ncol=3}
 
@@ -126,8 +118,9 @@ c) Quantile dot plot with $100$ quantiles as implemented in \textsc{ggdist} by @
 |                       |                                                                    | - Artefacts with non-discrete valued distributions.                                                                          |
 +-----------------------+--------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------+
 | KDE plot              | - Familiar to most users.                                          | - Tendency to over smooth.                                                                                                   |
-|                       | - Clear visual summary when sample adequately smooth.              | - Challenges with bounded data and discontinuities.                                                                          |
-|                       | - Easy to stack multiple plots for comparison.                     | - Selected kernel bandwidth can greatly impact the visualization.                                                            |
+|                       | - Clear visual summary when sample adequately smooth.              | - Challenges with discontinuities.                                                                                           |
+|                       | - Easy to overlay multiple plots for comparison.                   | - Boundaries need to handled with care                                                                                       |
+|                       |                                                                    | - Selected kernel bandwidth can greatly impact the visualization.                                                            |
 +-----------------------+--------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------+
 | Quantile dot plot     | - Dot position adaptive to local smoothness of sample.             | - Not familiar to most users.                                                                                                |
 |                       | - Easily quantifiable tail probability estimation.                 | - If area fixed and dots are restricted to circles, the aspect ratio is locked, unless vertical space is added between dots. |
@@ -157,33 +150,19 @@ aesthetically pleasing smooth summaries of the data, KDE plots are a very popula
 summarizing data.
 
 #### Quantile dot plot
-The quantile dot plot [@kay_when_2016], is a dot plot, where a set number of the observed
-quantiles---we use one hundred---are visualized instead of the observations themselves (see an
-example in @fig-intro-triplet-qdot). This results in a visual density estimator with a low bias and
-high variance similar to that of a histogram [@wilkinson_dot_1999].
-@kay_when_2016 show that a quantile dot plot with one hundred quantiles performs very similarly to a
-KDE-based density plot for tasks of estimating probabilistic predictions from
-visualizations. 
+In a quantile dot plot [@kay_when_2016], dots are used to represent a predefined number of quantiles, see an example in @fig-intro-triplet-qdot. This results in a visual density estimator with a low bias and high variance similar to that of a histogram [@wilkinson_dot_1999]. @kay_when_2016 show that a quantile dot plot with one hundred quantiles performs very similarly to a
+KDE-based density plot for tasks of estimating probabilistic predictions from visualizations. 
 
 #### Advantages and disadvantages of the three visualizations
-In @tbl-pros-cons we have collected what we see as the main advantages and disadvantages of
-histograms, KDE density plots, and quantile dot plots for visualizing observations and assessing the
-quality of model predictions. Both the histogram and the KDE density plot have commonly recognized
-drawbacks, summarized by a trade-off between over and under smoothing.
+In @tbl-pros-cons we have collected what we see as the main advantages and disadvantages of histograms, KDE density plots, and quantile dot plots for visualizing observations and assessing the quality of model predictions. Both the histogram and the KDE density plot have commonly recognized drawbacks, summarized by a trade-off between over and under smoothing.
 
-The choice of bin width and breakpoints causes histograms to suffer from binning artefacts
-[@dimitriadis_stable_2021]. Additionally, comparing the histogram of observations to multiple
-histograms visualizing predictive samples may be difficult.
+The choice of bin width and breakpoints causes histograms to suffer from binning artefacts [@dimitriadis_stable_2021]. Additionally, comparing the histogram of observations to multiple histograms visualizing predictive samples may be difficult.
 
-Density plots from KDEs, as shown in @sec-density-function-with-steps, @sec-bounded-density, and
-@sec-point-mass, have a tendency to either hide details such as discontinuities in the observation
-distribution if the chosen bandwidth is too large, or over-fit to the sample when the bandwidth is
-too small. When over-fitting, comparing multiple density plots may be difficult, as there is more
-variation on the estimate of the underlying distribution. These drawbacks are common in the standard implementations of KDE density plots. More specialized software often implement measures, such as automated boundary detection and less conservative bandwidth selection algorithms, to mitigate these issues [@kumar_arviz_2019; @kay_ggdist_2023].
+Density plots from KDEs, as shown in @sec-density-function-with-steps, @sec-bounded-density, and @sec-point-mass, have a tendency to either hide details such as discontinuities in the observation distribution if the chosen bandwidth is too large, or over-fit to the sample when the bandwidth is too small. When over-fitting, comparing multiple density plots may be difficult, as there is more variation on the estimate of the underlying distribution. These drawbacks are common in the standard implementations of KDE density plots. More specialized software often implement measures, such as automated boundary detection and less conservative bandwidth selection algorithms, to mitigate these issues [@kumar_arviz_2019; @kay_ggdist_2023].
 
 Quantile dot plots offer a low-overhead approach for visualizing distributions without requiring the specification of a binning scheme. Compared to KDEs, quantile dot plots have the added benefit of allowing for fast visual probability estimation in the tails of the distribution. In our experience, and as shown in @sec-point-mass and @sec-density-function-with-steps in case of discontinuities and outliers, quantile dot plots also offer a better visualization than KDEs and histograms. A potential drawback is their relative lack of familiarity among some audiences, however, this limitation is expected to become less of a problem as quantile-based visualizations become more widely adopted.
 
-While histograms, KDEs, and quantile dot plots can each be useful in different settings, their effectiveness depends on how well the chosen visualization method, and their associated parameters, capture salient features of the data. In Section @sec-assessing-the-goodness-of-fit, we introduce a method for assessing the goodness of fit of these visualizations, allowing users to evaluate whether a given choice provides an adequate representation of the predictive distribution for their data, or whether alternative visualization strategies or parameter settings should be considered.
+While histograms, KDEs, and quantile dot plots can each be useful in different settings, their effectiveness depends on how well the chosen visualization method, and their associated parameters, capture salient features of the data. In Section @sec-assessing-the-goodness-of-fit, we introduce a method for assessing the goodness of fit of these visualizations, allowing users to evaluate whether a given choice provides an adequate representation of the predictive distribution for their data, or whether alternative visualizations or parameter settings should be considered.
 
 ### Visual predictive checking with overlaid plots{#sec-predictive-checks_overlay}
 
@@ -223,9 +202,9 @@ Finally, faceting can be combined with any of these strategies to examine subset
 
 ### Other predictive checking strategies for continuous data{#sec-predictive-checks_others}
 
-Overlaid plots, particularly those based on KDEs, are generally easy to interpret, but they do not provide a quantitative measure of the differences between distributions. For a more formal assessment, we recommend using PIT–ECDF plots, as discussed in [@sailynoja_graphical_2022]. PIT-ECDF can be used togheter with leave-one-out cross-validation (LOO-CV) to avoid using the same observations for both fitting the model and assessing the predictive performance. This is particuallary important for flexible models and small number of observations. If one were to not use cross-validation, the PIT values would tend to be too close to 0.5 and the PIT-ECDF plot would be S-shaped, suggesting many observations are too close to their respective predictive means. For fast LOO-CV computation, we recommend using Pareto smoothed importance sampling (PSIS) [@JMLR:v25:19-556]. This method estimates the leave-one-out predictive distributions without the need for refitting the model for each left out observation.  In our experience, the PIT-ECDF plots of both the posterior predictive and LOO-predictive draws are useful for assessing that the predictive distribution of the model is well calibrated and the visualizations give insight to the nature of the possible issues in model fit.
+Overlaid plots, particularly those based on KDEs, are generally easy to interpret, but they do not provide a quantitative measure of the differences between distributions. For a more formal assessment, we recommend using PIT–ECDF plots, as discussed in [@sailynoja_graphical_2022]. PIT-ECDF can be used togheter with leave-one-out cross-validation (LOO-CV) to avoid using the same observations for both fitting the model and assessing the predictive performance. This is particularly important for flexible models and small number of observations. If one were to not use cross-validation, the PIT values would tend to be too close to 0.5 and the PIT-ECDF plot would be S-shaped, suggesting many observations are too close to their respective predictive means. For fast LOO-CV computation, we recommend using Pareto smoothed importance sampling (PSIS) [@JMLR:v25:19-556]. This method estimates the leave-one-out predictive distributions without the need for refitting the model for each left out observation.  In our experience, the PIT-ECDF plots of both the posterior predictive and LOO-predictive draws are useful for assessing that the predictive distribution of the model is well calibrated and the visualizations give insight to the nature of the possible issues in model fit.
 
-So far, the methods discussed provide global assessments, like detection of over or underdispersion. This is often complemented with evaluations conditional on individual predictors. Residual-based diagnostics play an important role in this context, as residual plots are commonly used to assess systematic deviations between observations and model predictions across covariate values, identify heteroscedasticity, and revealing local model misspecification that may not be apparent in marginal or aggregate checks [@gelman_regression_2020; @gelman_bayesian_2013; @agresti_categorical_2013]. Residual-based diagnostics are widely used and well understood for continuous data, so we do not discuss them further here, but we will discuss them in the next section in the context of binary data, where computation of residuals is not that straightforward.
+So far, the methods discussed provide global assessments, like detection of over or underdispersion. Thusm these methods are often complemented with evaluations conditional on individual predictors. Residual-based diagnostics play an important role in this context, as residual plots are commonly used to assess systematic deviations between observations and model predictions across covariate values, identify heteroscedasticity, and revealing local model misspecification that may not be apparent in marginal or aggregate checks [@gelman_regression_2020; @gelman_bayesian_2013; @agresti_categorical_2013]. Residual-based diagnostics are widely used and well understood for continuous data, so we do not discuss them further here, but we will discuss them in the next section in the context of binary data, where computation of residuals is not that straightforward.
 
 
 ## Visual predictive checks for binary data{#sec-visual-predictive-checks-for-binary-data}
@@ -270,7 +249,7 @@ both models, the observed event frequency falls within the 95% credible interval
 
 :::
 
-Bar graphs are a common choice when summarizing discrete binary, categorical, or ordinal data and predictions, but they are not that useful for visual predictive checking. In the extreme case of binary data, even a model with one parameter corresponding to the proportion of one class, can perfectly model the proportion, and the overlaid posterior predictive checking bar plots are useless (and KDE plots are even worse with misleading smoothing). Additionally, as shown in @fig-ppc-bars and @fig-binned-calibration-plots below, any assessment that is more advanced than inspecting the relative frequencies of the discrete states, is impossible with the bar graphs. For example, under- and overconfidence, and symmetric confusion between states, is not visible in a graph, for that reason we focus our discussion on calibration plots.
+Bar graphs are a common choice when summarizing discrete binary, categorical, or ordinal data and predictions, but they are not that useful for visual predictive checking. In the extreme case of binary data, even a model with one parameter corresponding to the proportion of one class, can perfectly model the proportion, and the overlaid posterior predictive checking bar plots are useless (and KDE plots are even worse with misleading smoothing). Additionally, as shown in @fig-ppc-bars and @fig-binned-calibration-plots below, any assessment that is more advanced than inspecting the relative frequencies of the discrete states, is impossible with the bar graphs. For example, under- and overconfidence, and symmetric confusion between states, is not visible in a graph, for that we recommend calibration plots over bar graphs.
 
 
 ### Calibration plots for binary data
@@ -293,7 +272,7 @@ binomial model the model is under-confident in predicting cases of no roaches ob
 
 :::
 
-While potentially useful, binned calibration plots suffer from drawbacks similar to those of histograms: the choice of binning is left to the user and can cause the resulting plots to differ substantially, as shown by [@dimitriadis_stable_2021]. For that reason in the next section we discuss an alternative method that does not require binning decisions from the user.
+While potentially useful, binned calibration plots suffer from drawbacks similar to those of histograms: the choice of binning is left to the user and can cause the resulting plots to differ substantially, as shown by [@dimitriadis_stable_2021]. For that reason in the next section we discuss an alternative method that does not require binning decisions from the user and thus provides a much robust alternative to be used as the default method for visual predictive checking when working with binary data.
 
 ### PAV-adjusted calibration plots
 
@@ -327,8 +306,7 @@ and additionally have higher ability to discriminate the observations with no ro
 
 While PAV-adjusted calibration plots are useful for assessing the overall predictive calibration of a model, practitioners are often also interested in model behavior conditional on individual predictors. As discussed for continuous data, residual plots are commonly used to assess deviations between observations and predictions. While residuals are straightforward to compute and visualize for continuous outcomes, this is more challenging for binary data. 
 
-To compute the residuals we can use binning to transform discrete outcomes into relative event frequencies, enabling residual-like diagnostics in this setting. But as already discussed for binned calibration plots the ad-hoc choice of binning may result in vastly different plots, and thus we propose the use of PAV-adjusted CEPs, computed with regards to the predicted probabilities, in place of the discrete observations. @fig-residuals shows an example of a PAV-adjusted residual plot for the
-roaches example. 
+To compute the residuals we can use binning to transform discrete outcomes into relative event frequencies, enabling residual-like diagnostics in this setting. But as already discussed ad-hoc choices of binning may result in vastly different plots, and thus we propose the use of PAV-adjusted CEPs, computed with regards to the predicted probabilities, in place of the discrete observations. @fig-residuals shows an example of a PAV-adjusted residual plot for the roaches example. 
 
 ::: {#fig-residuals }
 
@@ -454,9 +432,9 @@ The side-by-side comparison of the PAV-adjusted calibration plots for the cumula
 
 In this section, we focus on count data, which although being discrete, can benefit from both continuous and discrete visualizations. 
 
-Continuous visualizations are commonly used for count data and they can sometimes be a good choice. For instance we can use the overlaid KDE plots introduced in @sec-predictive-checks_overlay. In our experience, the higher the number of distinct counts being visualized, and the smaller the variance of probabilities of individual counts is, the more effective KDEs are for visualizing count data, although one should pay close attention to the effect of the boundedness on the KDE fit as  count data is usually limited to non-negative values and sometimes also has maximum count limit. In section @sec-assessing-the-goodness-of-fit we discuss a goodness-of-fit diagnostic that can be used to evaluate if a KDE is a good choice for count data.
+Continuous visualizations are commonly used for count data and they can sometimes be a good choice. For instance we can use the overlaid KDE plots discussed in @sec-predictive-checks_overlay. In our experience, the higher the number of distinct counts being visualized, and the smaller the variance of probabilities of individual counts is, the more effective KDEs are for visualizing count data, although one should pay close attention to the effect of the boundedness on the KDE fit as  count data is usually limited to non-negative values and sometimes also has maximum count limit. In section @sec-assessing-the-goodness-of-fit we discuss a goodness-of-fit diagnostic that can be used to evaluate if a KDE is a good choice for count data.
 
-There are cases where they can be misleading and visual predictive checks designed specifically for count data should be used. In the next section we discuss rootograms[@kleiber_visualizing_2016], including our own version of them.
+There are cases where we need visual predictive checks designed specifically for count data. In the next section we discuss rootograms[@kleiber_visualizing_2016], including our own version of them.
 
 
 ### Rootograms emphasize discreteness of count data{#sec-counts-with-rootogram}
@@ -1024,25 +1002,11 @@ When moving to analyze the bulk of the distribution, we see that the number of d
 
 ## Discussion
 
-In this paper we discussed the current options for graphical predictive checking in Bayesian model checking
-workflows. As discussed, the type of data being modelled, and the type of model being applied are
-key considerations when choosing a particular approach. We strongly recommend that practitioners
-carefully consider the underlying assumptions being made by a chosen visualization and perform some
-form of diagnostic-check, such as the discussed PIT-ECDF, if unsure.
+In this paper we discussed the current options for visual predictive checking in Bayesian model checking workflows. As discussed, the type of data being modelled, and the type of model being applied are key considerations when choosing a particular approach. We strongly recommend that practitioners carefully consider the underlying assumptions being made by a chosen visualization and perform some form of diagnostic-check, such as the discussed PIT-ECDF in @sec-assessing-the-goodness-of-fit, if unsure.
 
-To summaries our recommendations, KDE plots are primarily only recommended for when a modeller is
-confident that the distribution is smooth (no point-masses or steps), or if there are
-many unique discrete values. If a KDE plot is going to be used for a bounded distribution, boundary corrections methods should be used, and we still recommend goodness-of-fit checking. Failing this, if the distribution has a continuous component, we
-recommend a quantile dot plot. For count distributions, we recommend a modified rootogram, plotting
-points and credible intervals instead of smoothed limits. For unordered discrete data, we recommend
-using a PAV-adjusted One-Versus-Others calibration plot. Finally, for ordered discrete data, we also
-recommend a PAV-adjusted calibration, but evaluating the cumulative conditional event probabilities.
+To summaries our recommendations, KDE plots are primarily recommended for when a modeller is confident that the distribution is smooth (no point-masses or steps), or if there are many unique discrete values. If a KDE plot is going to be used for a bounded distribution, boundary corrections methods should be used (as those implemented in [@kumar_arviz_2019; @kay_ggdist_2023]), and we still recommend goodness-of-fit checking. Failing this, if the distribution has a continuous component, we recommend a quantile dot plot. For count distributions, we recommend our modified version of the rootogram, plotting points and credible intervals instead of smoothed limits. For unordered discrete data, we recommend using a PAV-adjusted One-Versus-Others calibration plot. Finally, for ordered discrete data, we also recommend a PAV-adjusted calibration, but evaluating the cumulative conditional event probabilities.
 
-It must be emphasized that these are only general recommendations. As we have presented above, these
-recommended plots may still fail to identify miscalibration or other goodness-of-fit issues in some
-situations. Careful consideration of model assumptions and application of diagnostics should always
-form part of the modeller’s standard practice. Many of our recommendations can be taken into account
-in the visual predictive checking software, for example, by giving a warning if a user tries to
+It must be emphasized that these are only general recommendations. As we have presented above, these recommended plots may still fail to identify miscalibration or other goodness-of-fit issues in some situations. Careful consideration of model assumptions and application of diagnostics should always form part of the modeller’s standard practice. Many of our recommendations can be taken into account in the visual predictive checking software, for example, by giving a warning if a user tries to
 use overlaid KDE plot or bar plot for checking a model in case of binary data.
 
 ## Acknowledgements  {.unnumbered}
