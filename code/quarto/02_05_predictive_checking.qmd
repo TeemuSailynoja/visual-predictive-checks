@@ -103,12 +103,6 @@ qdots <- ggplot(
     binwidth = bw_dots
 )) +
   ggforce::geom_circle(
-    aes(x0 = x, y0 = y, r = 0.5 * bw_dots),
-    fill = paper_colors["mid"],
-    color = paper_colors["mid_highlight"],
-    linewidth = .8
-  ) +
-  ggforce::geom_circle(
     aes(x0 = x, y0 = y, r = .5 * bw_dots),
     alpha = .2,
     fill = paper_colors["light_highlight"],
@@ -126,6 +120,11 @@ qdots <- ggplot(
     ) |> dplyr::bind_rows(),
     linewidth = 0,
     n = 10
+  ) +
+    ggforce::geom_circle(
+    aes(x0 = x, y0 = y, r = 0.5 * bw_dots),
+    color = "black",
+    linewidth = .5
   ) +
   coord_equal()
 
