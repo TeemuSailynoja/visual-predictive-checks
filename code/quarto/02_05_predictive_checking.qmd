@@ -72,12 +72,14 @@ We fit the following Stan model to the sample and extract predictive draws.
 ```{r}
 #| label: show_stan_model
 #| class-output: stan
+
 model <- cmdstan_model(stan_file = "code/stan/02_05_normal.stan")
 
 model$print()
 ```
 ```{r}
 #| label: fit_stan_model
+
 fit <- model$sample(data = list(N = n, Y = y), refresh = 0, thin = 50)
 ```
 
@@ -149,9 +151,9 @@ p_hist <- ggplot(data.frame(y = y)) +
       x = y,
       y = after_stat(density)
     ),
-    fill = paper_colors["light_highlight"],
-    color = paper_colors["mid"],
-    linewidth = .8,
+    fill = "white", #paper_colors["light_highlight"],
+    color = paper_colors["dark_highlight"],#paper_colors["mid"],
+    linewidth = .6,
     binwidth = bw_hist,
     center = mean(range(y))
   )
@@ -173,9 +175,10 @@ p_hist <- p_hist +
       ymin = ymin,
       ymax = ymax
     ),
-    color = paper_colors["dark_highlight"],
-    interval_color = paper_colors["dark"],
-    linewidth = .8
+    color = paper_colors["mid"],#paper_colors["dark_highlight"],
+    interval_color = paper_colors["mid"], #paper_colors["dark"],
+    linewidth = 5.0,
+    size = 5.0
   ) +
   coord_equal(
     xlim = layer_scales(qdots)$x$range$range,
