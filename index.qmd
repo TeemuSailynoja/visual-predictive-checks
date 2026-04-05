@@ -57,19 +57,19 @@ model building workflows. These assessments may reveal that the model prediction
 (or replicate) the observed data, prompting the modeller to either improve their model, or adjust
 their confidence in the predictions accordingly. In this paper, we focus on examples rising from
 Bayesian workflows [@gabry_visualization_2019;@gelman_bayesian_2020], such as posterior predictive
-checking [PPC; @box_sampling_1980;@rubin_bayesianly_1984; @gelman_posterior_1996; @gelman_bayesian_2013], and
+checking [PPC; @box_sampling_1980; @rubin_bayesianly_1984; @gelman_posterior_1996; @gelman_bayesian_2013], and
 visualizations of data, posterior, and posterior predictive distributions. 
 Visualization of data distribution is useful even if we do not do any modeling. In Bayesian inference, 
 the posterior distribution presents the uncertainty in the parameter values after conditioning on data, and the 
 posterior predictive distribution presents the uncertainty in the predictions for new observations.
-The posterior inference is often performed using Monte Carlo methods [@strumbelj_past_2024], and posterior, posterior 
+The posterior inference is often performed using Monte Carlo methods [@strumbelj_past_2024], and posterior and posterior 
 predictive distributions are then represented with draws from these distributions. In the same way as we visualize data distributions, we can visualize posterior and predictive distributions.
 In posterior predictive checking, we compare the data distribution to the posterior predictive distribution. The predictive distribution is not expected to coincide exactly with the observed data. For example, the posterior predictive distribution of a Bayesian model typically exhibits heavier tails than the true underlying data-generating distribution. Consequently, effective visual comparisons should focus on whether the predictive distribution is consistent with observed data rather than on exact agreement. If these distributions are not similar, the model is misspecified and we should consider improving the model.
 These visualizations are also applicable to prior predictive checking, where one might compare prior predictive samples to some reference values rising from domain knowledge [@wesnerChoosingPriorsBayesian2021], and to cross-validation predictive checking where data are compared to cross-validation predictive distributions to avoid double use of data.
 
-The purpose of this paper is to illustrate common issues in visual predictive checking, to provide better recommendations for different use cases, and to provide diagnostics to automatically warn if useless or misleading visualization is used.
+The purpose of this paper is to illustrate common issues in visual predictive checking, to provide better recommendations for different use cases, and to provide diagnostics to automatically warn if a useless or misleading visualization is used.
 Together we have decades of experience in teaching visual predictive checking and helping modellers use popular visual predictive checking tools such as those implemented in `bayesplot` (@gabry_plotting_2022) and `ArviZ` (@martin_2026).
-We have seen many times students and modelers use commonly recommended visualizations without realizing that, in their context, the specific visualization is incorrect, useless, or even misleading.
+We have seen many times students and modellers use commonly recommended visualizations without realizing that, in their context, the specific visualization is incorrect, useless, or even misleading.
 Backed up with arguments from recent studies in uncertainty visualization, we provide a summary of methods we recommend.
 These methods are aimed to offer an informed basis for decision-making, be it for the modeller to improve on the model or for the end user to set expectations on the performance of the model.
 
@@ -90,8 +90,8 @@ The discussed methods and recommendations in this work have been implemented in 
 
 ## Visual predictive checks for continuous data{#sec-continuous-predictive-distributions}
 
-In this section, we consider visualizations for observations from a *continuous* or *almost everywhere continuous* distribution. We focus on three data visualizations; histograms, KDEs and quantile dot plots [@kay_when_2016]. The first two are the most commonly used visualizations for summarizing unidimensional distributions and their are common choices for initial visual predictice checks (VPCs) (@wickham_ggplot2_2016;@gabry_plotting_2022; @martin_2026; @kay_ggdist_2023; @eabm_2025). We see quantile dots plots as a useful alternative in many cases. @tbl-pros-cons summarizes the main advantages and disadvantages of these three visualizations, and @fig-intro-triplet shows a side-by-side comparison of these visualizations.
-Histograms and KDEs are implemented in various commonly used software packages for data visualization  .
+In this section, we consider visualizations for observations from a *continuous* or *almost everywhere continuous* distribution. We focus on three data visualizations; histograms, KDEs and quantile dot plots [@kay_when_2016]. The first two are the most commonly used visualizations for summarizing unidimensional distributions and there are common choices for initial visual predictice checks (VPCs) (@wickham_ggplot2_2016;@gabry_plotting_2022; @martin_2026; @kay_ggdist_2023; @eabm_2025). We see quantile dots plots as a useful alternative in many cases. @tbl-pros-cons summarizes the main advantages and disadvantages of these three visualizations, and @fig-intro-triplet shows a side-by-side comparison of these visualizations.
+Histograms and KDEs are implemented in various commonly used software packages for data visualization.
 
 :::{#fig-intro-triplet layout-ncol=3}
 
@@ -105,7 +105,7 @@ Three visualizations of the same sample from a smooth continuous distribution.
 a) Histogram with 30 equally spaced bins. 
 b) Density plot using a Gaussian kernel and bandwidth $0.37$ computed through the \textsc{R}
 implementation of the method by @sheather_reliable_1991.
-c) Quantile dot plot with $100$ quantiles as implemented in \textsc{ggdist} by @kay_ggdist_2023.
+c) Quantile dot plot with $100$ quantiles as implemented in `ggdist` by @kay_ggdist_2023.
 
 :::
 
@@ -119,7 +119,7 @@ c) Quantile dot plot with $100$ quantiles as implemented in \textsc{ggdist} by @
 +-----------------------+--------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------+
 | KDE plot              | - Familiar to most users.                                          | - Tendency to over smooth.                                                                                                   |
 |                       | - Clear visual summary when sample adequately smooth.              | - Challenges with discontinuities.                                                                                           |
-|                       | - Easy to overlay multiple plots for comparison.                   | - Boundaries need to handled with care                                                                                       |
+|                       | - Easy to overlay multiple plots for comparison.                   | - Boundaries need to be handled with care                                                                                    |
 |                       |                                                                    | - Selected kernel bandwidth can greatly impact the visualization.                                                            |
 +-----------------------+--------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------+
 | Quantile dot plot     | - Dot position adaptive to local smoothness of sample.             | - Not familiar to most users.                                                                                                |
@@ -170,7 +170,7 @@ One common approach to comparing observed data with model predictions is to over
 
 (Do we want to mention ECDFs???) ECDFs are also easy to distinguish when overlaid and avoid the need for bandwidth selection. They can be particularly useful when the support of individual distributions is small compared to the overall range of the  predictive distribution, a situation that often arises in prior predictive checks. A drawback is that differences in local density may be harder to detect from ECDFs than from density-based plots.
 
-With histograms, and quantile dot plots, overlaid plots are rarely used, as the bin boundaries and dot locations depend on the model prediction and the resulting overlaid figure becomes difficult to read. A common solution for histograms, shown later in @sec-count-data, is to use a shared set of bins for the predictions and data, and to increase readability only show the predictions through per bin summary statistics, such as mean and quantile based intervals. A drawback with this approach is, that the per bin summaries don't show dependency between the bins, making it harder to assess the global shape of the density. To compare multiple quantile dot plots to a reference plot, we propose overlaying the reference plot with just the top dots of each stack in the quantile dot plots of the predictive samples. @fig-qdotplot-overlay shows the resulting plot,which illustrates the variation in the overall form of the predictive distribution. Again, when summarizing the quantile dot plots of the predictive draws, we lose information on the dependency between heights of the stacks and the overall shape of the predictive density.
+With histograms, and quantile dot plots, overlaid plots are rarely used, as the bin boundaries and dot locations depend on the model prediction and the resulting overlaid figure becomes difficult to read. A common solution for histograms, shown in @fig-histogram-overlay and later in @sec-count-data, is to use a shared set of bins for the predictions and data, and to increase readability only show the predictions through per bin summary statistics, such as mean and quantile based intervals. A drawback with this approach is, that the per bin summaries don't show dependency between the bins, making it harder to assess the global shape of the density. To compare multiple quantile dot plots to a reference plot, we propose overlaying the reference plot with just the top dots of each stack in the quantile dot plots of the predictive samples. @fig-qdotplot-overlay shows the resulting plot,which illustrates the variation in the overall form of the predictive distribution. Again, when summarizing the quantile dot plots of the predictive draws, we lose information on the dependency between heights of the stacks and the overall shape of the predictive density.
 
 ::: {#fig-overlaid-predictive-checks layout-ncol="3"}
 
