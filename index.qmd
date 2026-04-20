@@ -90,7 +90,7 @@ The discussed methods and recommendations in this work have been implemented in 
 
 ## Visual predictive checks for continuous data{#sec-continuous-predictive-distributions}
 
-In this section, we consider visualizations for observations from a *continuous* or *almost everywhere continuous* distribution. We focus on three data visualizations; histograms, KDEs and quantile dot plots [@kay_when_2016]. The first two are the most commonly used visualizations for summarizing unidimensional distributions and there are common choices for initial visual predictice checks (VPCs) (@wickham_ggplot2_2016;@gabry_plotting_2022; @martin_2026; @kay_ggdist_2023; @eabm_2025). We see quantile dots plots as a useful alternative in many cases. @tbl-pros-cons summarizes the main advantages and disadvantages of these three visualizations, and @fig-intro-triplet shows a side-by-side comparison of these visualizations.
+In this section, we consider visualizations for observations from a *continuous* or *almost everywhere continuous* distribution. We focus on three data visualizations; histograms, KDEs and quantile dot plots [@kay_when_2016]. The first two are the most commonly used visualizations for summarizing unidimensional distributions and there are common choices for initial visual predictive checks (VPCs) (@wickham_ggplot2_2016;@gabry_plotting_2022; @martin_2026; @kay_ggdist_2023; @eabm_2025). We see quantile dots plots as a useful alternative in many cases. @tbl-pros-cons summarizes the main advantages and disadvantages of these three visualizations, and @fig-intro-triplet shows a side-by-side comparison of these visualizations.
 Histograms and KDEs are implemented in various commonly used software packages for data visualization.
 
 :::{#fig-intro-triplet layout-ncol=3}
@@ -168,8 +168,6 @@ While histograms, KDEs, and quantile dot plots can each be useful in different s
 
 One common approach to comparing observed data with model predictions is to overlay visualizations of the data and of draws from the predictive distribution within the same plot. KDEs are typically used for this purpose, as multiple density curves can be easily distinguished when displayed together. The choice of bandwidth plays a critical role in such comparisons: a bandwidth that is too small can lead to highly variable estimates even for repeated draws from the same distribution, whereas an overly large bandwidth can oversmooth the densities and obscure important distributional features.
 
-(Do we want to mention ECDFs???) ECDFs are also easy to distinguish when overlaid and avoid the need for bandwidth selection. They can be particularly useful when the support of individual distributions is small compared to the overall range of the  predictive distribution, a situation that often arises in prior predictive checks. A drawback is that differences in local density may be harder to detect from ECDFs than from density-based plots.
-
 With histograms, and quantile dot plots, overlaid plots are rarely used, as the bin boundaries and dot locations depend on the model prediction and the resulting overlaid figure becomes difficult to read. A common solution for histograms, shown in @fig-histogram-overlay and later in @sec-count-data, is to use a shared set of bins for the predictions and data, and to increase readability only show the predictions through per bin summary statistics, such as mean and quantile based intervals. A drawback with this approach is, that the per bin summaries don't show dependency between the bins, making it harder to assess the global shape of the density. To compare multiple quantile dot plots to a reference plot, we propose overlaying the reference plot with just the top dots of each stack in the quantile dot plots of the predictive samples. @fig-qdotplot-overlay shows the resulting plot,which illustrates the variation in the overall form of the predictive distribution. Again, when summarizing the quantile dot plots of the predictive draws, we lose information on the dependency between heights of the stacks and the overall shape of the predictive density.
 
 ::: {#fig-overlaid-predictive-checks layout-ncol="3"}
@@ -204,7 +202,7 @@ Finally, faceting can be combined with any of these strategies to examine subset
 
 Overlaid plots, particularly those based on KDEs, are generally easy to interpret, but they do not provide a quantitative measure of the differences between distributions. For a more formal assessment, we recommend using LOO-PIT-ECDF plots to diagnose calibration of pointwise predictive distributions, as discussed by @Tesso-Vehtari:2026. Leave-one-out cross-validation (LOO-CV) avoids using the same observations for both fitting the model and assessing the predictive calibration. This is particularly important for flexible models and a small number of observations. If one were not to use cross-validation, the PIT values would tend to be too close to 0.5 and would not be close to uniform even for a well-calibrated model. For fast LOO-CV computation, we recommend using Pareto smoothed importance sampling (PSIS) [@JMLR:v25:19-556]. This method estimates the leave-one-out predictive distributions without the need for refitting the model for each left out observation. In the case of well-calibrated predictive distributions, LOO-PIT values are close to uniform but dependent. @Tesso-Vehtari:2026 present uniformity tests that are efficient and works well for testing LOO-PIT uniformity. The approach also includes graphical diagnostics for the LOO-PIT-ECDF, indicating parts of the ECDF that mostly explain any non-uniformity to give insight into the nature of the possible issues in model fit.
 
-So far, the methods discussed provide global assessments, like detection of over or underdispersion. Thusm these methods are often complemented with evaluations conditional on individual predictors. Residual-based diagnostics play an important role in this context, as residual plots are commonly used to assess systematic deviations between observations and model predictions across covariate values, identify heteroscedasticity, and revealing local model misspecification that may not be apparent in marginal or aggregate checks [@gelman_regression_2020; @gelman_bayesian_2013; @agresti_categorical_2013]. Residual-based diagnostics are widely used and well understood for continuous data, so we do not discuss them further here, but we will discuss them in the next section in the context of binary data, where computation of residuals is not that straightforward.
+So far, the methods discussed provide global assessments, like detection of over or underdispersion. Thus these methods are often complemented with evaluations conditional on individual predictors. Residual-based diagnostics play an important role in this context, as residual plots are commonly used to assess systematic deviations between observations and model predictions across covariate values, identify heteroscedasticity, and revealing local model misspecification that may not be apparent in marginal or aggregate checks [@gelman_regression_2020; @gelman_bayesian_2013; @agresti_categorical_2013]. Residual-based diagnostics are widely used and well understood for continuous data, so we do not discuss them further here, but we will discuss them in the next section in the context of binary data, where computation of residuals is not that straightforward.
 
 
 ## Visual predictive checks for binary data{#sec-visual-predictive-checks-for-binary-data}
@@ -286,7 +284,7 @@ calibration plot even if the model was perfectly calibrated.
 consistency bands computed from the posterior predictive distribution. First, we compute the
 CEPs using the posterior predictive means for each observation. Then we form the consistency
 bands by using the corresponding posterior predictive draws to determine the 95% credible
-intervals for CEPs of draws from the predictive distribution.
+intervals for CEPs of draws from the predictive distribution. With flexible models, we recommend the use of LOO predictive distributions to assess the calibration of the ou-of-sample predictions.
 
 ::: {#fig-pava-calibration  layout-ncol="2"}
 ![Negative binomial model](images/03_01_pava_calibration-1.png){.plot fig-alt="PAV-adjusted calibration plot. The red calibration line starts from y = 0 at x = 0.25 and reaches the right top corner. At x = 0.6, the calibration line is briefly outside the consistency ribbon. The quantile dot plot shows that 90% of the predicted probabilities are between 0.5 and 0.9."}
@@ -379,9 +377,8 @@ the model is over-confident in its predicted probabilities for these classes.
 
 ## Visual predictive checks for ordinal data{#sec-visual-predictive-checks-for-ordinal-data}
 
-Models for ordinal data often have such parameters that even the simplest model predictive probabilities 
-match the observed frequencies and bar plots are useless (KDE plots are even worse with misleading smoothing). 
-In the case of ordinal predictions, instead of looking at the OVO distributions, we can assess the
+Models for ordinal data often have such parameters that predictive probabilities of even the simplest model match the observed frequencies, which renders bar plots useless (KDE plots are even worse with misleading smoothing). 
+In the case of ordinal predictions, instead of looking at the OVO distributions, a natural approach is to assess the
 calibration of the cumulative conditional event probabilities. This allows us to again use the
 toolset presented for binomial predictive checks in @sec-visual-predictive-checks-for-binary-data,
 now resulting in $M-1$ plots, where $M$ is the number of possible distinct discrete cases.
@@ -452,7 +449,7 @@ The suspended rootogram instead visualizes the residual, $y_{obs} - y_{pred}$, a
 
 ![Standing Rootogram](images/03_01_rootogram_plain_cut-1.png){.plot #fig-standing-rootogram fig-alt="A bar graph of observations overlaid with a line graph of predictive means, and a ribbon of predictive intervals surrounding the means."}
 
-![Hanging Rootogram](images/03_01_rootogram_hanging_cut-1.png){.plot #fig-hanging-rootogram fig-alt="A line graph of predictive means, and a ribbon of predictive intervals surrounding the means. Observations are displayed as bars with the top of the bar at the predictive mean, and the bottom displaying the difference of the observation and the predictive mean."}
+![Hanging Rootogram](images/03_01_rootogram_hanging_cut-1.png){.plot #fig-hanging-rootogram fig-alt="A line graph of predictive means, and a ribbon of predictive intervals surrounding the means. Observations are displayed as bars with the top of the bar at the predictive mean, and the bottom displaying the difference of the predictive mean and the observation."}
 
 ![Suspended Rootogram](images/03_01_rootogram_suspended_cut-1.png){.plot #fig-suspended-rootogram fig-alt="A bar graph of the differences between the observations and the predictive means overlaid with a line graph of predictive means, and a ribbon of predictive intervals surrounding the means."}
 
@@ -497,7 +494,8 @@ Finally residuals are commonly used as well, we want to notice that the previous
 
 As KDE plots, histograms, and quantile dot plots all produce a visualization of a density, we can assess the
 representativeness of the visualization by assessing the goodness-of-fit of the implied density estimate to
-the data being visualized. In this section, we introduce a method for assessing the goodness of fit of these visualizations, enabling users to evaluate whether a given choice is appropriate for their data. The proposed goodness-of-fit method is general and extends beyond the context of predictive checking.
+the data being visualized. This goodness-of-fit test should focus on alerting the user of under-fitting to the data, as in that case some important characteristics of the data may be missed. Over-fitting, on the other hand, is less of a concern as long as the visualization is still able to serve as a useful visual summary and does not become overly complex.
+Next, we introduce a method for assessing the goodness of fit of these visualizations, enabling users to evaluate whether a given choice is appropriate for their data. The proposed goodness-of-fit method is general and extends beyond the context of predictive checking.
 
 We can assess a density estimator by assessing the goodness-of-fit of the implied density estimate to the data being visualized. To assess the goodness-of-fit of a density estimate $\hat f$, we test for the uniformity of the probability integral transformed (PIT) data $\lbrace x_1,\dots, x_N\rbrace$ when the density approximator is used for the transform. The PIT value, $u_i$, of $x_i$ w.r.t. a density estimator $\hat f$ is defined as the cumulative distribution value,
 $$
@@ -512,7 +510,7 @@ where $\mathbb U(0,1)$ is the standard uniform distribution.
 Our uniformity test of choice, due to its graphical representation that further enhances the
 explainability of the results, is the graphical uniformity test proposed by
 @sailynoja_graphical_2022. This test provides simultaneous $1 - \alpha$ level confidence bands for
-the uniformity of the empirical cumulative distribution function (ECDF) of the PIT values. In the
+the uniformity of the empirical cumulative distribution function (ECDF) of the PIT values. Deviations of uniform occur when the observed ECDF deviates significantly from the theoretical uniform distribution. In the
 graphical test, the PIT-ECDF and the simultaneous confidence intervals are evaluated at a set of
 equidistant points along the unit interval. An example of these simultaneous confidence intervals
 for the ECDF of the PIT values, $F_{\text{PIT}}$ is provided in @fig-kde-continuous-unbounded-ecdf.
@@ -531,8 +529,7 @@ Next, we introduce how PIT can be implemented for the three visualizations.
 In theory, a KDE defines a proper probability distribution, and the PIT could be directly computed
 as in @eq-pit-definition. However, in practice the KDE density visualizations are often showing a 
 truncated version of the KDE, limited to an interval centered around the domain of the observed data.
-For PIT computation, we limit the integration to the displayed range and normalize the results to 
-make the truncated KDE integrate to one. 
+As the PIT values are used to assess the goodness-of-fit of the visualization, we limit the integration to the displayed range and normalize the results to make the truncated KDE integrate to one. 
 
 Most software implementations evaluate the KDE on a dense grid spanning the domain of the observed
 data, thus allowing numerical PIT computation by extracting the density values on these evaluation 
@@ -547,7 +544,7 @@ For a histogram with equal bins of width $h$, we define the PIT as
     \text{PIT}(x) = h\sum_{j=1}^{J} f_j + (x - l_{J+1})f_{J+1},
 \end{align}
 
-where $J = \max_j \lbrace r_j \leq x\rbrace$, and $l_j$ and $r_j$ are the left and right ends of the
+where $J = \max_j \lbrace r_j \leq x\rbrace$, $f_j$ is the density, and $l_j$ and $r_j$ are the left and right ends of the
 $j$th bin.
 
 Again, the relative densities and boundaries of these bins are usually readily available in the 
@@ -556,8 +553,7 @@ histograms is a relatively simple task.
 
 #### PIT for quantile dot plots
 
-As the quantile dot plots are discrete, the PIT values computed according to @eq-pit-definition are 
-not guaranteed to be uniformly distributed. As demonstrated by @fruiiwirth-schnatter_recursive_1996, for a
+By construction, as quantile dot plot places dots at the quantiles of the observation, the PIT values will be discrete uniform. As demonstrated by @fruiiwirth-schnatter_recursive_1996, for a
 discrete random variable $X$, one can employ a randomized interpolation method to obtain 
 uniformly distributed values,
 
@@ -571,7 +567,7 @@ center of the $k$th dot and $r$ the radius of the dots, we define a randomized P
 
 \begin{align}
     \text{PIT}(x) \sim \mathbb U\left(\frac{l(x)}{n_q}, \frac{u(x)}{n_q}\right) ,
-\end{align}§
+\end{align}
 
 where $n_q$ is the amount of quantiles, that is, dots, in the plot, and $l(x)$ and $u(x)$ are the
 quantile indices satisfying
@@ -725,7 +721,7 @@ the following true density $f$, shown in @fig-true-step:
 f(x) = \begin{cases}
          \frac{2}{5}\Phi(-\frac{1}{2})^{-1}\mathcal{N}(x\mid 0,1), & x \leq -\frac{1}{2}\\
           \frac{1}{5}, & -\frac{1}{2} < x \leq \frac{1}{2}\\
-         \frac{2}{5}\Phi(-\frac{1}{4})^{-1}\mathcal{N}(x\mid 0,\frac{1}{4}), & x > \frac{1}{2},
+         \frac{2}{5}\Phi(-1)^{-1}\mathcal{N}(x\mid 0,\frac{1}{4}), & x > \frac{1}{2},
        \end{cases}
 \end{align}
 
@@ -745,7 +741,7 @@ goodness-of-fit issues.
 
 @fig-histogram-step shows the visualization and goodness-of-fit assessment for the same data, when
 using a histogram. Although the discontinuity is strongly hinted in the histogram, it is not located
-close to a bin boundary and causes significant goodness-of-fit issues as too much density is placed
+close to a bin boundary and causes moderate local goodness-of-fit issues as too much density is placed
 on the last values of the low density region preceding the discontinuity.
 
 Lastly, @fig-qplot-step shows the same process for a quantile dot plot. Again, the discontinuities
@@ -1004,7 +1000,7 @@ When moving to analyze the bulk of the distribution, we see that the number of d
 
 In this paper we discussed the current options for visual predictive checking in Bayesian model checking workflows. As discussed, the type of data being modelled, and the type of model being applied are key considerations when choosing a particular approach. We strongly recommend that practitioners carefully consider the underlying assumptions being made by a chosen visualization and perform some form of diagnostic-check, such as the discussed PIT-ECDF in @sec-assessing-the-goodness-of-fit, if unsure.
 
-To summaries our recommendations, KDE plots are primarily recommended for when a modeller is confident that the distribution is smooth (no point-masses or steps), or if there are many unique discrete values. If a KDE plot is going to be used for a bounded distribution, boundary corrections methods should be used (as those implemented in [@martin_2026; @kay_ggdist_2023]), and we still recommend goodness-of-fit checking. Failing this, if the distribution has a continuous component, we recommend a quantile dot plot. For count distributions, we recommend our modified version of the rootogram, plotting points and credible intervals instead of smoothed limits. For unordered discrete data, we recommend using a PAV-adjusted One-Versus-Others calibration plot. Finally, for ordered discrete data, we also recommend a PAV-adjusted calibration, but evaluating the cumulative conditional event probabilities.
+To summarise our recommendations, KDE plots are primarily recommended for when a modeller is confident that the distribution is smooth (no point-masses or steps), or if there are many unique discrete values. If a KDE plot is going to be used for a bounded distribution, boundary corrections methods should be used (as those implemented in [@martin_2026; @kay_ggdist_2023]), and we still recommend goodness-of-fit checking. Failing this, if the distribution has a continuous component, we recommend a quantile dot plot. For count distributions, we recommend our modified version of the rootogram, plotting points and credible intervals instead of smoothed limits. For unordered discrete data, we recommend using a PAV-adjusted One-Versus-Others calibration plot. Finally, for ordered discrete data, we also recommend a PAV-adjusted calibration, but evaluating the cumulative conditional event probabilities.
 
 It must be emphasized that these are only general recommendations. As we have presented above, these recommended plots may still fail to identify miscalibration or other goodness-of-fit issues in some situations. Careful consideration of model assumptions and application of diagnostics should always form part of the modeller’s standard practice. Many of our recommendations can be taken into account in the visual predictive checking software, for example, by giving a warning if a user tries to
 use overlaid KDE plot or bar plot for checking a model in case of binary data.
