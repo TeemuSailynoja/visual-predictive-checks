@@ -1,5 +1,5 @@
 # Supplementary materials and code implementations
-[![DOI](https://zenodo.org/badge/939910801.svg)](https://doi.org/10.5281/zenodo.15189798)
+[![DOI](https://zenodo.org/badge/939910801.svg)](https://doi.org/10.5281/zenodo.19660437)
 
 This directory holds up to date versions of the extended case-studies and code linked to the article [Recommendations for visual predictive checks in Bayesian workflow](https://www.journalovi.org/2025-sailynoja-visual-predictive-checks/) 
 

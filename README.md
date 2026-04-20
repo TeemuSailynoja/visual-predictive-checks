@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/939910801.svg)](https://doi.org/10.5281/zenodo.15189798)
+[![DOI](https://zenodo.org/badge/939910801.svg)](https://doi.org/10.5281/zenodo.19660437)
 
 ```diff
 ! This paper is under review on the experimental track of the Journal of Visualization and Interaction.
